@@ -1,10 +1,11 @@
-use crate::block::Block;
-use crate::consts::KEY_PAIR_LENGTH;
-use crate::transaction::Transaction;
 use chrono::Utc;
 use rand::rngs::OsRng;
 use rsa::errors::Error;
 use rsa::{Hash, PaddingScheme, PublicKey, RSAPrivateKey, RSAPublicKey};
+
+use crate::consts::KEY_PAIR_LENGTH;
+
+use super::{Block, Transaction};
 
 #[derive(Debug)]
 pub struct Blockchain {

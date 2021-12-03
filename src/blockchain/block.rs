@@ -1,7 +1,7 @@
-use crate::consts::NEEDED_HASH_START;
+use crate::{consts::NEEDED_HASH_START, util::sha256};
 use rand::random;
 
-use crate::{transaction::Transaction, util::sha256};
+use super::Transaction;
 
 #[derive(Debug)]
 pub struct Block {

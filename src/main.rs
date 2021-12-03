@@ -1,12 +1,8 @@
-use blockchain::Blockchain;
-use wallet::Wallet;
+use crate::blockchain::{Blockchain, Wallet};
 
-mod block;
 mod blockchain;
 mod consts;
-mod transaction;
 mod util;
-mod wallet;
 
 fn main() {
     let satoshi = Wallet::new();

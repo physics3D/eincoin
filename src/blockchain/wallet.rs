@@ -2,7 +2,9 @@ use rand::rngs::OsRng;
 
 use rsa::{errors::Error, Hash, PaddingScheme, RSAPrivateKey, RSAPublicKey};
 
-use crate::{blockchain::Blockchain, consts::KEY_PAIR_LENGTH, transaction::Transaction};
+use crate::consts::KEY_PAIR_LENGTH;
+
+use super::{Blockchain, Transaction};
 
 pub struct Wallet {
     pub private_key: RSAPrivateKey,
