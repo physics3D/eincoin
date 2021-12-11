@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 
-pub const DIFFICULTY: u32 = 2;
+pub const DIFFICULTY: u32 = 1;
 pub const KEY_PAIR_LENGTH: usize = 2048;
 
 // lazily create the needed start for a block hash: a null byte DIFFICULTY times
@@ -13,3 +13,7 @@ lazy_static! {
         vec
     };
 }
+
+pub const BUFFER_SIZE: usize = 4096;
+
+pub const NETWORKING_LOOP_SLEEP_TIME: u64 = 100;

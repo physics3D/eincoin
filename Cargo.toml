@@ -6,8 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = "0.4.19"
+bincode = "1.3.3"
+bus = "2.2.3"
+chrono = { version = "0.4.19", features = ["serde"] }
+crossbeam-channel = "0.5.1"
 lazy_static = "1.4.0"
+log = "0.4.14"
 rand = "0.8.4"
-rsa = "0.4.0"
-sha2 = "0.9.5"
+rsa = { version = "0.5.0", features = ["serde"] }
+serde = { version = "1.0.131", features = ["derive"] }
+sha2 = "0.10.0"
+simplelog = "0.11.1"
+structopt = "0.3.25"
+
+[features]
