@@ -1,18 +1,28 @@
-use std::{fs, path::PathBuf, process::exit};
-
-use log::{error, warn};
-
-use rand::{rngs::OsRng, Rng};
-use rsa::{
-    errors::Error,
-    pkcs8::{FromPrivateKey, FromPublicKey, ToPrivateKey, ToPublicKey},
-    Hash, PaddingScheme, RsaPrivateKey, RsaPublicKey,
+use std::{
+    fs,
+    path::PathBuf,
+    process::exit,
+    sync::{Arc, Mutex},
 };
 
-use crate::consts::KEY_PAIR_LENGTH;
+use bus::Bus;
+use log::error;
+
+use rand::rngs::OsRng;
+use rsa::{
+    errors::Error,
+    pkcs8::{FromPrivateKey, ToPrivateKey, ToPublicKey},
+    RsaPrivateKey, RsaPublicKey,
+};
+
+use crate::{
+    consts::KEY_PAIR_LENGTH,
+    networking::{InternalMessage, MessageDest, MessageSource, MessageType},
+};
 
 use super::{Blockchain, Transaction};
 
+#[derive(Clone)]
 pub struct Wallet {
     pub private_key: RsaPrivateKey,
     pub public_key: RsaPublicKey,
@@ -31,18 +41,8 @@ impl Wallet {
         }
     }
 
-    pub fn new_from_keyfiles(private_key_file: PathBuf, public_key_file: PathBuf) -> Self {
+    pub fn new_from_keyfile(private_key_file: PathBuf) -> Self {
         let private_key_string = match fs::read_to_string(&private_key_file) {
-            Ok(file_content) => file_content,
-            Err(err) => {
-                error!(
-                    "Failed to read the key from {:?} because of {}",
-                    private_key_file, err
-                );
-                exit(0);
-            }
-        };
-        let public_key_string = match fs::read_to_string(&public_key_file) {
             Ok(file_content) => file_content,
             Err(err) => {
                 error!(
@@ -54,12 +54,7 @@ impl Wallet {
         };
 
         let private_key = RsaPrivateKey::from_pkcs8_pem(&private_key_string).unwrap();
-        let public_key_computed = RsaPublicKey::from_public_key_pem(&public_key_string).unwrap();
         let public_key = private_key.to_public_key();
-
-        if public_key_computed != public_key {
-            warn!("Public keys don't match");
-        }
 
         Self {
             private_key,
@@ -78,23 +73,16 @@ impl Wallet {
         &self,
         amount: u32,
         payee_public_key: RsaPublicKey,
-        chain: &mut Blockchain,
+        sender: Arc<Mutex<Bus<InternalMessage>>>,
     ) -> Result<(), Error> {
-        let transaction = Transaction {
-            amount,
-            payer: self.public_key.clone(),
-            payee: payee_public_key.clone(),
-        };
+        // why do we need that dereferencing
+        let transaction = Transaction::new(amount, Some(self.clone()), payee_public_key.clone());
 
-        let signature = self
-            .private_key
-            .sign(
-                PaddingScheme::new_pkcs1v15_sign(Some(Hash::SHA2_256)),
-                &transaction.hash(),
-            )
-            .unwrap();
-
-        chain.add_block(vec![transaction], &self.public_key, vec![signature])?;
+        sender.lock().unwrap().broadcast(InternalMessage::new(
+            MessageType::Transaction(transaction),
+            MessageSource::Localhost,
+            MessageDest::Broadcast,
+        ));
 
         Ok(())
     }
@@ -106,8 +94,10 @@ impl Wallet {
             for transaction in &block.transactions {
                 if transaction.payee == self.public_key {
                     money += transaction.amount;
-                } else if transaction.payer == self.public_key {
-                    money -= transaction.amount;
+                } else if let Some(payer) = &transaction.payer {
+                    if *payer == self.public_key {
+                        money -= transaction.amount;
+                    }
                 }
             }
         }

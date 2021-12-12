@@ -1,8 +1,11 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    process::exit,
+    sync::{Arc, Mutex},
+};
 
 use bus::Bus;
 use crossbeam_channel::Sender;
-use log::{info, warn};
+use log::{error, info, warn};
 
 use crate::{
     blockchain::Blockchain,
@@ -65,6 +68,11 @@ impl Middleware for NodeMiddleware {
 
                 if self.index == self.num_blocks_in_chain {
                     info!("Done receiving chain");
+
+                    if !chain.verify() {
+                        error!("Chain is wrong!");
+                        exit(1);
+                    }
 
                     self.index = 0;
                     self.num_blocks_in_chain = 0;

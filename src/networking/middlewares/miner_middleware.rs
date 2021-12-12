@@ -4,7 +4,7 @@ use bus::Bus;
 use crossbeam_channel::Sender;
 
 use crate::{
-    blockchain::{Block, Blockchain, Transaction},
+    blockchain::{Block, Blockchain, Transaction, Wallet},
     networking::{InternalMessage, MessageType},
 };
 
@@ -16,10 +16,10 @@ pub struct MinerMiddleware {
 }
 
 impl MinerMiddleware {
-    pub fn new() -> Self {
+    pub fn new(wallet: Wallet) -> Self {
         Self {
             transactions: vec![],
-            miner: Miner::new(),
+            miner: Miner::new(wallet),
         }
     }
 }

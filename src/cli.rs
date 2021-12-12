@@ -1,14 +1,9 @@
-use log::{info, LevelFilter};
+use log::LevelFilter;
 use simplelog::{
     ColorChoice, CombinedLogger, Config, SharedLogger, TermLogger, TerminalMode, WriteLogger,
 };
-use std::{
-    fs::{write, File},
-    path::PathBuf,
-};
+use std::{fs::File, path::PathBuf};
 use structopt::StructOpt;
-
-use crate::blockchain::Wallet;
 
 /// A shitty try at implementing a cryptocurrency
 #[derive(StructOpt, Clone)]
@@ -28,8 +23,21 @@ pub enum Command {
     /// Generate a Rsa keypair for your wallet
     GenKey {
         /// Pass a file if you want to save the keypair in a file. Otherwise, it will print to stdout
+        file: Option<String>,
+    },
+    /// Generate your public key from your private key
+    GenPubKey {
+        /// The file with your wallet's private key
         #[structopt(parse(from_os_str))]
-        file: Option<PathBuf>,
+        private_key_file: PathBuf,
+    },
+    /// Generate completions for your shell
+    GenCompletions {
+        /// Your shell
+        shell: String,
+        /// The file to write the completion script to
+        #[structopt(parse(from_os_str))]
+        file: PathBuf,
     },
     /// Connect a full node to the eincoin network
     FullNode {
@@ -39,8 +47,11 @@ pub enum Command {
         #[structopt(short, long, default_value = "3333")]
         port: String,
         /// Attempt to mine new blocks
-        #[structopt(short, long)]
+        #[structopt(short, long, requires("private-key-file"))]
         miner: bool,
+        /// The file with your wallet's private key
+        #[structopt(short = "k", long = "key-file", parse(from_os_str))]
+        private_key_file: Option<PathBuf>,
         /// The port to open a server on
         #[structopt(short, long)]
         server: Option<String>,
@@ -53,9 +64,6 @@ pub enum Command {
         /// The file with your wallet's private key
         #[structopt(parse(from_os_str))]
         private_key_file: PathBuf,
-        /// The file with your wallet's public key
-        #[structopt(parse(from_os_str))]
-        public_key_file: PathBuf,
     },
     /// Init a transaction on the eincoin network
     Transaction {
@@ -66,17 +74,14 @@ pub enum Command {
         port: String,
         /// The amount of Eincoin to send
         amount: u32,
-        /// The payee's public key
+        /// The file with the payee's public key
         #[structopt(parse(from_os_str))]
         payee_public_key: PathBuf,
         /// The file with your wallet's private key
         #[structopt(parse(from_os_str))]
         private_key_file: PathBuf,
-        /// The file with your wallet's public key
-        #[structopt(parse(from_os_str))]
-        public_key_file: PathBuf,
     },
-    /// View your wallets balance
+    /// View your wallet's balance
     Balance {
         /// The address of the eincoin server to connect to
         addr: String,
@@ -86,9 +91,6 @@ pub enum Command {
         /// The file with your wallet's private key
         #[structopt(parse(from_os_str))]
         private_key_file: PathBuf,
-        /// The file with your wallet's public key
-        #[structopt(parse(from_os_str))]
-        public_key_file: PathBuf,
     },
 }
 
@@ -109,29 +111,4 @@ pub fn setup_loggers(cli_args: CliArgs) {
     }
 
     CombinedLogger::init(loggers).unwrap();
-}
-
-pub fn gen_key(file: Option<PathBuf>) {
-    info!("Generating keypair");
-    let wallet = Wallet::new_random();
-    let (private_key_string, public_key_string) = wallet.to_string();
-
-    if let Some(path) = file {
-        info!("Writing keypair to file {}", path.to_str().unwrap());
-        write(
-            PathBuf::from(path.to_str().unwrap().to_string() + ".priv"),
-            private_key_string,
-        )
-        .unwrap();
-        write(
-            PathBuf::from(path.to_str().unwrap().to_string() + ".pub"),
-            public_key_string,
-        )
-        .unwrap();
-    } else {
-        info!("Printing keypair to stdout");
-        println!("{}", private_key_string);
-        println!();
-        println!("{}", public_key_string);
-    }
 }

@@ -1,4 +1,3 @@
-#![allow(unused)]
 mod block;
 mod blockchain;
 mod transaction;

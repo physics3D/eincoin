@@ -1,6 +1,8 @@
 use lazy_static::lazy_static;
 
 pub const DIFFICULTY: u32 = 1;
+pub const INITIAL_COIN_AMOUNT: u32 = 100;
+pub const MINING_REWARD: u32 = 1;
 pub const KEY_PAIR_LENGTH: usize = 2048;
 
 // lazily create the needed start for a block hash: a null byte DIFFICULTY times

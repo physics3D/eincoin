@@ -1,4 +1,7 @@
-use crate::{consts::NEEDED_HASH_START, util::sha256};
+use crate::{
+    consts::{MINING_REWARD, NEEDED_HASH_START},
+    util::sha256,
+};
 use chrono::Utc;
 use log::info;
 use rand::random;
@@ -25,24 +28,31 @@ impl Block {
     }
 
     pub fn hash(&self) -> Vec<u8> {
-        sha256(self.to_string().as_bytes())
+        sha256(&bincode::serialize(self).unwrap())
     }
 
     pub fn generate_nonce() -> u64 {
         random()
     }
 
-    fn to_string(&self) -> String {
-        format!("{:?}", &self)
+    pub fn verify_nonce(&self) -> bool {
+        self.hash().starts_with(&NEEDED_HASH_START)
     }
 
-    pub fn verify(&self) -> bool {
-        self.hash().starts_with(&NEEDED_HASH_START)
+    pub fn verify(&self, prev_hash: &[u8]) -> bool {
+        self.prev_hash == prev_hash
+            && self.verify_nonce()
+            && self
+                .transactions
+                .iter()
+                .take(self.transactions.len() - 1)
+                .all(|transaction| transaction.verify())
+            && self.transactions[self.transactions.len() - 1].amount == MINING_REWARD
     }
 
     pub fn mine(&mut self) {
         loop {
-            if self.verify() {
+            if self.verify_nonce() {
                 info!("Solved: {}", self.nonce);
                 return;
             }

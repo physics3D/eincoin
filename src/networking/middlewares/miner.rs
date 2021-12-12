@@ -6,7 +6,8 @@ use std::{
 use log::info;
 
 use crate::{
-    blockchain::Block,
+    blockchain::{Block, Transaction, Wallet},
+    consts::MINING_REWARD,
     networking::{
         message::{MessageDest, MessageSource},
         InternalMessage, MessageType,
@@ -15,12 +16,14 @@ use crate::{
 
 pub struct Miner {
     killswitch_sender: Option<Sender<bool>>,
+    wallet: Wallet,
 }
 
 impl Miner {
-    pub fn new() -> Self {
+    pub fn new(wallet: Wallet) -> Self {
         Self {
             killswitch_sender: None,
+            wallet,
         }
     }
 
@@ -33,12 +36,19 @@ impl Miner {
         let (killswitch_sender, killswitch_receiver) = channel();
         self.killswitch_sender = Some(killswitch_sender);
 
+        // add the transaction where the miner gets money
+        block.transactions.push(Transaction::new(
+            MINING_REWARD,
+            None,
+            self.wallet.public_key.clone(),
+        ));
+
         thread::spawn(move || loop {
             if killswitch_receiver.try_recv().is_ok() {
                 break;
             }
 
-            if block.verify() {
+            if block.verify_nonce() {
                 info!("Solved a block: {}", block.nonce);
                 result_sender
                     .send(InternalMessage::new(
