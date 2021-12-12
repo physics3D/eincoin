@@ -145,11 +145,11 @@ fn main() {
             networking_manager.add_middleware(NodeMiddleware::new(false, move |_, sender, _| {
                 match wallet.send_money(amount, payee_public_key.clone(), sender) {
                     Ok(_) => {
-                        info!("Sent the money");
+                        info!("Sent {} eincoin", amount);
                         // todo: find a better way than that
                         thread::sleep(Duration::from_secs(1));
                     }
-                    Err(err) => error!("Error while seding the money: {}", err),
+                    Err(err) => error!("Error while sending the money: {}", err),
                 }
                 exit(0);
             }));

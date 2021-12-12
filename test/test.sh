@@ -14,8 +14,8 @@ function new-terminal-cargo {
 
 cargo build --release || exit 1
 
-gen-key genesis-key
-gen-key key
+gen-key keyfiles/genesis-key
+gen-key keyfiles/key
 
 new-terminal-cargo "genesis genesis-key.priv.pem"
 
