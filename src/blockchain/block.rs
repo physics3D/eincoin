@@ -1,8 +1,7 @@
 use crate::{
     consts::{MINING_REWARD, NEEDED_HASH_START},
-    util::sha256,
+    util::{sha256, time_since_unix_epoch},
 };
-use chrono::Utc;
 use log::info;
 use rand::random;
 use serde::{Deserialize, Serialize};
@@ -13,7 +12,7 @@ use super::Transaction;
 pub struct Block {
     pub prev_hash: Vec<u8>,
     pub transactions: Vec<Transaction>,
-    pub date: String,
+    pub date: u128,
     pub nonce: u64,
 }
 
@@ -22,7 +21,7 @@ impl Block {
         Self {
             prev_hash,
             transactions,
-            date: Utc::now().to_string(),
+            date: time_since_unix_epoch(),
             nonce: Self::generate_nonce(),
         }
     }

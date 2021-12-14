@@ -12,8 +12,8 @@ use super::{
 use crate::consts::{BUFFER_SIZE, NETWORKING_LOOP_SLEEP_TIME};
 
 use bus::BusReader;
-use crossbeam_channel::Sender;
 use log::warn;
+use std::sync::mpsc::Sender;
 
 pub struct Client {
     client: Option<TcpStream>,

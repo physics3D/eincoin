@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use bus::Bus;
-use crossbeam_channel::Sender;
+use std::sync::mpsc::Sender;
 
 use crate::{blockchain::Blockchain, networking::InternalMessage};
 

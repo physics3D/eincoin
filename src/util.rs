@@ -1,4 +1,8 @@
-use std::{error::Error, fmt::Display};
+use std::{
+    error::Error,
+    fmt::Display,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use log::error;
 
@@ -11,6 +15,13 @@ pub fn sha256(bytes: &[u8]) -> Vec<u8> {
     let result = hasher.finalize();
 
     result.to_vec()
+}
+
+pub fn time_since_unix_epoch() -> u128 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis()
 }
 
 #[derive(Debug)]

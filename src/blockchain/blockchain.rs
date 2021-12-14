@@ -1,10 +1,9 @@
-use chrono::Utc;
 use log::info;
 
 use rsa::RsaPublicKey;
 use serde::{Deserialize, Serialize};
 
-use crate::consts::INITIAL_COIN_AMOUNT;
+use crate::{consts::INITIAL_COIN_AMOUNT, util::time_since_unix_epoch};
 
 use super::{Block, Transaction};
 
@@ -22,7 +21,7 @@ impl Blockchain {
                 None,
                 initial_payee_public_key,
             )],
-            date: Utc::now().to_string(),
+            date: time_since_unix_epoch(),
             nonce: 0,
         };
         genesis_block.mine();

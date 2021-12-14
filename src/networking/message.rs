@@ -1,7 +1,9 @@
-use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
-use crate::blockchain::{Block, Transaction};
+use crate::{
+    blockchain::{Block, Transaction},
+    util::time_since_unix_epoch,
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum MessageType {
@@ -28,14 +30,14 @@ impl MessageType {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Message {
     pub message_type: MessageType,
-    pub timestamp: String,
+    pub timestamp: u128,
 }
 
 impl Message {
     pub fn new(message_type: MessageType) -> Self {
         Self {
             message_type,
-            timestamp: Utc::now().to_string(),
+            timestamp: time_since_unix_epoch(),
         }
     }
 }

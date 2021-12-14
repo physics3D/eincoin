@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-rm keyfiles
+rm -r keyfiles

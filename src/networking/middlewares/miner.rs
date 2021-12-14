@@ -27,11 +27,7 @@ impl Miner {
         }
     }
 
-    pub fn mine(
-        &mut self,
-        mut block: Block,
-        result_sender: crossbeam_channel::Sender<InternalMessage>,
-    ) {
+    pub fn mine(&mut self, mut block: Block, result_sender: Sender<InternalMessage>) {
         info!("Started mining");
         let (killswitch_sender, killswitch_receiver) = channel();
         self.killswitch_sender = Some(killswitch_sender);

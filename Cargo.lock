@@ -77,7 +77,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1e66e1779f5b1440f1a58220ba3b3ded4427175f0a9fb8d7066521f8b4e8f2b"
 dependencies = [
  "atomic-option",
- "crossbeam-channel 0.4.4",
+ "crossbeam-channel",
  "num_cpus",
  "parking_lot_core",
 ]
@@ -109,7 +109,6 @@ dependencies = [
  "libc",
  "num-integer",
  "num-traits",
- "serde",
  "time",
  "winapi",
 ]
@@ -159,18 +158,8 @@ version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b153fe7cbef478c567df0f972e02e6d736db11affe43dfc9c56a9374d1adfb87"
 dependencies = [
- "crossbeam-utils 0.7.2",
+ "crossbeam-utils",
  "maybe-uninit",
-]
-
-[[package]]
-name = "crossbeam-channel"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "06ed27e177f16d65f0f0c22a213e17c696ace5dd64b14258b52f9417ccb52db4"
-dependencies = [
- "cfg-if 1.0.0",
- "crossbeam-utils 0.8.5",
 ]
 
 [[package]]
@@ -181,16 +170,6 @@ checksum = "c3c7c73a2d1e9fc0886a08b93e98eb643461230d5f1925e4036204d5f2e261a8"
 dependencies = [
  "autocfg 1.0.1",
  "cfg-if 0.1.10",
- "lazy_static",
-]
-
-[[package]]
-name = "crossbeam-utils"
-version = "0.8.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d82cfc11ce7f2c3faef78d8a684447b40d503d9681acebed6cb728d45940c4db"
-dependencies = [
- "cfg-if 1.0.0",
  "lazy_static",
 ]
 
@@ -250,8 +229,6 @@ version = "0.1.0"
 dependencies = [
  "bincode",
  "bus",
- "chrono",
- "crossbeam-channel 0.5.1",
  "lazy_static",
  "log",
  "rand",

@@ -4,8 +4,8 @@ use std::{
 };
 
 use bus::Bus;
-use crossbeam_channel::Sender;
 use log::{error, info, warn};
+use std::sync::mpsc::Sender;
 
 use crate::{
     blockchain::Blockchain,

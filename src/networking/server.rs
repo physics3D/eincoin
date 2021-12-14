@@ -7,8 +7,8 @@ use std::{
 };
 
 use bus::{Bus, BusReader};
-use crossbeam_channel::Sender;
 use log::{error, info};
+use std::sync::mpsc::Sender;
 
 use crate::consts::{BUFFER_SIZE, NETWORKING_LOOP_SLEEP_TIME};
 

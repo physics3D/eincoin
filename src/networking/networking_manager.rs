@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use bus::Bus;
-use crossbeam_channel::{unbounded, Receiver, Sender};
+use std::sync::mpsc::{channel, Receiver, Sender};
 
 use crate::{blockchain::Blockchain, consts::BUFFER_SIZE, util::EincoinError};
 
@@ -18,7 +18,7 @@ pub struct NetworkingManager {
 
 impl NetworkingManager {
     pub fn new(addr: Option<String>, server_port: Option<String>) -> Result<Self, EincoinError> {
-        let (incoming_queue_sender, incoming_queue_receiver) = unbounded();
+        let (incoming_queue_sender, incoming_queue_receiver) = channel();
         let outgoing_queue_sender = Arc::new(Mutex::new(Bus::new(BUFFER_SIZE)));
 
         let mut local_server = None;
