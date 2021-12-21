@@ -11,7 +11,7 @@ pub struct NetworkingManager {
     client: Option<Client>,
     server: Option<Server>,
     incoming_queue_sender: Sender<InternalMessage>,
-    incoming_queue_receiver: Receiver<InternalMessage>,
+    incoming_queue_receiver: Option<Receiver<InternalMessage>>,
     outgoing_queue_sender: Arc<Mutex<Bus<InternalMessage>>>,
     middlewares: Vec<Box<dyn Middleware>>,
 }
@@ -54,7 +54,7 @@ impl NetworkingManager {
             client: local_client,
             server: local_server,
             incoming_queue_sender,
-            incoming_queue_receiver,
+            incoming_queue_receiver: Some(incoming_queue_receiver),
             outgoing_queue_sender,
             middlewares: vec![],
         };
@@ -68,28 +68,46 @@ impl NetworkingManager {
 
     fn start_networking_event_loop(&mut self, chain: &mut Blockchain) {
         loop {
-            let message = self.incoming_queue_receiver.recv().unwrap();
+            let message = self
+                .incoming_queue_receiver
+                .as_ref()
+                .unwrap()
+                .recv()
+                .unwrap();
+            self.run_middlewares(message, chain);
+        }
+    }
 
-            for middleware in &mut self.middlewares {
-                middleware.on_message(
-                    &message,
-                    &self.incoming_queue_sender,
-                    self.outgoing_queue_sender.clone(),
-                    chain,
-                );
-            }
+    pub fn run_middlewares(&mut self, message: InternalMessage, chain: &mut Blockchain) {
+        for middleware in &mut self.middlewares {
+            middleware.on_message(
+                &message,
+                &self.incoming_queue_sender,
+                self.outgoing_queue_sender.clone(),
+                chain,
+            );
         }
     }
 
     pub fn start_networking(&mut self, chain: &mut Blockchain) {
+        self.start_client_server();
+        self.start_networking_event_loop(chain);
+    }
+
+    pub fn start_client_server(&mut self) {
         if let Some(client) = &mut self.client {
             client.start_networking();
         }
-
         if let Some(server) = &mut self.server {
             server.start_networking();
         }
+    }
 
-        self.start_networking_event_loop(chain);
+    pub fn get_sender(&self) -> Arc<Mutex<Bus<InternalMessage>>> {
+        self.outgoing_queue_sender.clone()
+    }
+
+    pub fn get_receiver(&mut self) -> Option<Receiver<InternalMessage>> {
+        self.incoming_queue_receiver.take()
     }
 }

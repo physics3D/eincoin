@@ -14,7 +14,7 @@ pub struct Blockchain {
 
 impl Blockchain {
     pub fn new(initial_payee_public_key: RsaPublicKey) -> Self {
-        let mut genesis_block = Block {
+        let genesis_block = Block {
             prev_hash: vec![],
             transactions: vec![Transaction::new(
                 INITIAL_COIN_AMOUNT,
@@ -24,7 +24,6 @@ impl Blockchain {
             date: time_since_unix_epoch(),
             nonce: 0,
         };
-        genesis_block.mine();
 
         Self {
             chain: vec![genesis_block],

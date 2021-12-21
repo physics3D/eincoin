@@ -2,7 +2,6 @@ use crate::{
     consts::{MINING_REWARD, NEEDED_HASH_START},
     util::{sha256, time_since_unix_epoch},
 };
-use log::info;
 use rand::random;
 use serde::{Deserialize, Serialize};
 
@@ -49,14 +48,14 @@ impl Block {
             && self.transactions[self.transactions.len() - 1].amount == MINING_REWARD
     }
 
-    pub fn mine(&mut self) {
-        loop {
-            if self.verify_nonce() {
-                info!("Solved: {}", self.nonce);
-                return;
-            }
+    // pub fn mine(&mut self) {
+    //     loop {
+    //         if self.verify_nonce() {
+    //             info!("Solved: {}", self.nonce);
+    //             return;
+    //         }
 
-            self.nonce += 1;
-        }
-    }
+    //         self.nonce += 1;
+    //     }
+    // }
 }

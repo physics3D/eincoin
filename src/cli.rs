@@ -92,6 +92,17 @@ pub enum Command {
         #[structopt(parse(from_os_str))]
         private_key_file: PathBuf,
     },
+    /// execute several commands interactively
+    Interactive {
+        /// The address of the eincoin server to connect to
+        addr: String,
+        /// The port of the server
+        #[structopt(short, long, default_value = "3333")]
+        port: String,
+        /// The file with your wallet's private key
+        #[structopt(parse(from_os_str))]
+        private_key_file: PathBuf,
+    },
 }
 
 pub fn setup_loggers(cli_args: CliArgs) {

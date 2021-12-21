@@ -75,7 +75,6 @@ impl Wallet {
         payee_public_key: RsaPublicKey,
         sender: Arc<Mutex<Bus<InternalMessage>>>,
     ) -> Result<(), Error> {
-        // why do we need that dereferencing
         let transaction = Transaction::new(amount, Some(self.clone()), payee_public_key.clone());
 
         sender.lock().unwrap().broadcast(InternalMessage::new(
@@ -94,7 +93,9 @@ impl Wallet {
             for transaction in &block.transactions {
                 if transaction.payee == self.public_key {
                     money += transaction.amount;
-                } else if let Some(payer) = &transaction.payer {
+                }
+
+                if let Some(payer) = &transaction.payer {
                     if *payer == self.public_key {
                         money -= transaction.amount;
                     }
