@@ -17,5 +17,3 @@ lazy_static! {
 }
 
 pub const BUFFER_SIZE: usize = 4096;
-
-pub const NETWORKING_LOOP_SLEEP_TIME: u64 = 100;

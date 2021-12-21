@@ -1,21 +1,16 @@
 use std::{
-    io::{Read, Write},
-    net::{TcpListener, TcpStream},
+    net::TcpListener,
     sync::{Arc, Mutex},
     thread,
-    time::Duration,
 };
 
-use bus::{Bus, BusReader};
+use bus::Bus;
 use log::{error, info};
 use std::sync::mpsc::Sender;
 
-use crate::consts::{BUFFER_SIZE, NETWORKING_LOOP_SLEEP_TIME};
+use crate::networking::handle_stream;
 
-use super::{
-    message::{MessageDest, MessageSource},
-    InternalMessage,
-};
+use super::InternalMessage;
 
 pub struct Server {
     server: Option<TcpListener>,
@@ -46,7 +41,7 @@ impl Server {
             match server.accept() {
                 Ok((stream, socketaddr)) => {
                     info!("New connection from {}", socketaddr);
-                    handle_connection(
+                    handle_stream(
                         stream,
                         sender.clone(),
                         receiver_adder.lock().unwrap().add_rx(),
@@ -56,46 +51,4 @@ impl Server {
             }
         });
     }
-}
-
-fn handle_connection(
-    mut stream: TcpStream,
-    sender: Sender<InternalMessage>,
-    mut receiver: BusReader<InternalMessage>,
-) {
-    stream.set_nonblocking(true).unwrap();
-
-    thread::spawn(move || {
-        let address = stream.peer_addr().unwrap().to_string();
-
-        loop {
-            if let Ok(msg) = receiver.try_recv() {
-                if msg.should_be_send_to(&address) {
-                    stream
-                        .write_all(&bincode::serialize(&msg.message).unwrap())
-                        .unwrap();
-                }
-            }
-
-            let mut buf = [0; BUFFER_SIZE];
-            if let Ok(bytes) = stream.read(&mut buf) {
-                // client shut down
-                if bytes == 0 {
-                    info!("The client at {} shut down", address);
-                    break;
-                }
-
-                let message = InternalMessage::from_message(
-                    bincode::deserialize(&buf[0..bytes]).unwrap(),
-                    MessageSource::Foreign(address.clone()),
-                    MessageDest::Localhost,
-                );
-
-                sender.send(message).unwrap();
-            }
-
-            // should help the cpu
-            thread::sleep(Duration::from_millis(NETWORKING_LOOP_SLEEP_TIME));
-        }
-    });
 }
