@@ -47,15 +47,4 @@ impl Block {
                 .all(|transaction| transaction.verify())
             && self.transactions[self.transactions.len() - 1].amount == MINING_REWARD
     }
-
-    // pub fn mine(&mut self) {
-    //     loop {
-    //         if self.verify_nonce() {
-    //             info!("Solved: {}", self.nonce);
-    //             return;
-    //         }
-
-    //         self.nonce += 1;
-    //     }
-    // }
 }

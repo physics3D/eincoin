@@ -38,28 +38,6 @@ impl Blockchain {
         &self.chain[self.chain.len() - 1]
     }
 
-    // pub fn add_block(
-    //     &mut self,
-    //     transactions: Vec<Transaction>,
-    //     sender_public_key: &RsaPublicKey,
-    //     signatures: Vec<Vec<u8>>,
-    // ) -> Result<(), Error> {
-    //     let is_verified = transactions
-    //         .iter()
-    //         .zip(signatures.iter())
-    //         .all(|(transaction, signature)| transaction.verify(signature));
-
-    //     if is_verified {
-    //         let mut new_block = Block::new(self.last_block().hash(), transactions);
-    //         new_block.mine();
-    //         self.chain.push(new_block);
-    //         return Ok(());
-    //     }
-
-    //     error!("wrong signature");
-    //     Err(Error::Verification)
-    // }
-
     pub fn verify(&self) -> bool {
         info!("Verifying...");
 
