@@ -1,64 +1,67 @@
-use log::info;
-
 use rsa::RsaPublicKey;
 use serde::{Deserialize, Serialize};
 
-use crate::{consts::INITIAL_COIN_AMOUNT, util::time_since_unix_epoch};
+use crate::consts::INITIAL_COIN_AMOUNT;
 
 use super::{Block, Transaction};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Blockchain {
-    pub chain: Vec<Block>,
+    pub chain: Option<Block>,
 }
 
 impl Blockchain {
     pub fn new(initial_payee_public_key: RsaPublicKey) -> Self {
-        let genesis_block = Block {
-            prev_hash: vec![],
-            transactions: vec![Transaction::new(
+        let genesis_block = Block::new(
+            vec![],
+            vec![Transaction::new(
                 INITIAL_COIN_AMOUNT,
                 None,
                 initial_payee_public_key,
             )],
-            date: time_since_unix_epoch(),
-            nonce: 0,
-        };
+        );
 
         Self {
-            chain: vec![genesis_block],
+            chain: Some(genesis_block),
         }
     }
 
     pub fn new_empty() -> Self {
-        Self { chain: vec![] }
-    }
-
-    pub fn last_block(&self) -> &Block {
-        &self.chain[self.chain.len() - 1]
+        Self { chain: None }
     }
 
     pub fn verify(&self) -> bool {
-        info!("Verifying...");
-
-        for i in 1..self.chain.len() {
-            if !self.chain[i].verify(&self.chain[i - 1].hash()) {
-                return false;
-            }
+        if let Some(root) = &self.chain {
+            // we can't verify the root block, so we verify its children manually
+            let root_hash = root.hash();
+            root.children.iter().all(|child| child.verify(&root_hash))
+        } else {
+            true
         }
-
-        true
     }
 
-    pub fn verify_new_block(&self, block: &Block) -> bool {
-        if !block.verify(&self.last_block().hash()) {
-            return false;
+    pub fn push_block(&mut self, block: Block) -> bool {
+        if let Some(root) = &mut self.chain {
+            root.push(&block)
+        } else {
+            self.chain = Some(block);
+            true
         }
-
-        true
     }
 
-    pub fn push_block(&mut self, block: Block) {
-        self.chain.push(block);
+    pub fn main_chain(&self) -> Vec<Block> {
+        if let Some(root) = &self.chain {
+            root.get_longest_chain()
+        } else {
+            vec![]
+        }
+    }
+
+    pub fn all_blocks(&self) -> Vec<Block> {
+        if let Some(root) = &self.chain {
+            root.all_blocks()
+        } else {
+            vec![]
+        }
     }
 }

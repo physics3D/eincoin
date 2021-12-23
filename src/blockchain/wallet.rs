@@ -89,7 +89,7 @@ impl Wallet {
     pub fn compute_balance(&self, chain: &mut Blockchain) -> u32 {
         let mut money = 0;
 
-        for block in &chain.chain {
+        for block in &chain.main_chain() {
             for transaction in &block.transactions {
                 if transaction.payee == self.public_key {
                     money += transaction.amount;

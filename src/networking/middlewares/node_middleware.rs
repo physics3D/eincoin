@@ -12,14 +12,14 @@ use crate::{
     networking::{InternalMessage, MessageType},
 };
 
-use super::{common::verify_and_append_block_to_chain, middleware::Middleware};
+use super::middleware::Middleware;
 
 pub struct NodeMiddleware {
     is_server: bool,
     on_chain_received:
         Box<dyn FnMut(&Sender<InternalMessage>, Arc<Mutex<Bus<InternalMessage>>>, &mut Blockchain)>,
-    index: u32,
-    num_blocks_in_chain: u32,
+    index: usize,
+    num_blocks_in_chain: usize,
 }
 impl NodeMiddleware {
     pub fn new(
@@ -56,7 +56,9 @@ impl Middleware for NodeMiddleware {
                 info!("Receiving chain...");
             }
             MessageType::SendBlockchainBlock(block) => {
-                chain.chain.push(block.clone());
+                if !chain.push_block(block.clone()) {
+                    warn!("Got a wrong block from the server");
+                }
 
                 info!(
                     "Received block {}/{}",
@@ -69,8 +71,12 @@ impl Middleware for NodeMiddleware {
                 if self.index == self.num_blocks_in_chain {
                     info!("Done receiving chain");
 
-                    if !chain.verify() {
+                    info!("Verifying chain...");
+                    if chain.verify() {
+                        info!("Chain is correct");
+                    } else {
                         error!("Chain is wrong!");
+                        info!("{:#?}", chain);
                         exit(1);
                     }
 
@@ -83,7 +89,17 @@ impl Middleware for NodeMiddleware {
             }
             MessageType::Transaction(_) => {}
             MessageType::MinedBlock(block) => {
-                verify_and_append_block_to_chain(chain, block);
+                if !chain.push_block(block.clone()) {
+                    warn!("Received a wrong mined block");
+                    return;
+                }
+
+                if !self.is_server {
+                    postprocessing_sender
+                        .lock()
+                        .unwrap()
+                        .broadcast(message.clone());
+                }
             }
         }
     }

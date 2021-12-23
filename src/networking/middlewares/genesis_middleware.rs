@@ -9,7 +9,7 @@ use crate::{
     networking::{InternalMessage, MessageType},
 };
 
-use super::{common::verify_and_append_block_to_chain, middleware::Middleware};
+use super::middleware::Middleware;
 
 pub struct GenesisMiddleware;
 
@@ -28,7 +28,9 @@ impl Middleware for GenesisMiddleware {
             }
             MessageType::Transaction(_) => {}
             MessageType::MinedBlock(block) => {
-                verify_and_append_block_to_chain(chain, block);
+                if !chain.push_block(block.clone()) {
+                    warn!("Someone send a wrong block");
+                }
             }
             MessageType::SendBlockchainBlock(_) => {
                 warn!("Someone send the root node a blockchain block")

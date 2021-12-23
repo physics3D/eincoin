@@ -81,6 +81,9 @@ pub fn interactive(addr: String, port: String, private_key_file: PathBuf) {
                     Err(err) => error!("Error while sending the money: {}", err),
                 }
             }
+            "chain" => {
+                println!("{:#?}", chain);
+            }
             "exit" => exit(0),
             _ => error!("Unknown command"),
         }

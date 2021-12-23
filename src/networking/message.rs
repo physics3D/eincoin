@@ -8,7 +8,7 @@ use crate::{
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum MessageType {
     Connect,
-    SendBlockchain(u32),
+    SendBlockchain(usize),
     SendBlockchainBlock(Block),
     Transaction(Transaction),
     MinedBlock(Block),
@@ -93,11 +93,7 @@ pub struct InternalMessage {
 
 impl InternalMessage {
     pub fn new(message_type: MessageType, source: MessageSource, dest: MessageDest) -> Self {
-        Self {
-            message: Message::new(message_type),
-            source,
-            dest,
-        }
+        Self::from_message(Message::new(message_type), source, dest)
     }
 
     pub fn from_message(message: Message, source: MessageSource, dest: MessageDest) -> Self {

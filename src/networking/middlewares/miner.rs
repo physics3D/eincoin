@@ -50,7 +50,7 @@ impl Miner {
                     .send(InternalMessage::new(
                         MessageType::MinedBlock(block),
                         MessageSource::Localhost,
-                        MessageDest::Broadcast,
+                        MessageDest::Localhost,
                     ))
                     .unwrap();
                 break;

@@ -26,17 +26,20 @@ impl Middleware for ServerMiddleware {
     ) {
         // dont forward connect, sendblockchain and sendblockchainblock messages
         if let MessageType::Connect = message.message.message_type {
+            let all_blocks = chain.all_blocks();
+
             let address = message.source.unwrap();
             let mut sender = postprocessing_sender.lock().unwrap();
             sender.broadcast(InternalMessage::new(
-                MessageType::SendBlockchain(chain.chain.len() as u32),
+                MessageType::SendBlockchain(all_blocks.len()),
                 MessageSource::Localhost,
                 MessageDest::Single(address.clone()),
             ));
 
-            for block in &chain.chain {
+            for mut block in all_blocks {
+                block.children = vec![];
                 sender.broadcast(InternalMessage::new(
-                    MessageType::SendBlockchainBlock(block.clone()),
+                    MessageType::SendBlockchainBlock(block),
                     MessageSource::Localhost,
                     MessageDest::Single(address.clone()),
                 ));
@@ -52,10 +55,8 @@ impl Middleware for ServerMiddleware {
         }
 
         info!(
-            "Forwarding a {} message from {} to {}",
-            message.message.message_type.to_string(),
-            message.source.to_string(),
-            message.dest.to_string()
+            "Forwarding a {} message",
+            message.message.message_type.to_string()
         );
 
         let mut new_message = message.clone();

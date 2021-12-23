@@ -31,9 +31,11 @@ pub fn handle_stream(
     thread::spawn(move || loop {
         if let Ok(msg) = receiver.recv() {
             if msg.should_be_send_to(&address) {
-                stream
-                    .write_all(&bincode::serialize(&msg.message).unwrap())
-                    .unwrap();
+                if let Err(_) = stream.write_all(&bincode::serialize(&msg.message).unwrap()) {
+                    // connection shut down
+                    info!("The connection to {} was shut down", address);
+                    break;
+                }
             }
         }
     });
@@ -44,8 +46,8 @@ pub fn handle_stream(
 
         loop {
             if let Ok(bytes) = stream_clone.read(&mut buf) {
-                // connection shut down
                 if bytes == 0 {
+                    // connection shut down
                     info!("The connection to {} was shut down", address_clone);
                     break;
                 }

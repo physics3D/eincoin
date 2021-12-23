@@ -36,7 +36,10 @@ impl Middleware for MinerMiddleware {
             self.transactions.push(transaction.clone());
             self.miner.abort();
 
-            let new_block = Block::new(chain.last_block().hash(), self.transactions.clone());
+            let new_block = Block::new(
+                chain.main_chain().last().unwrap().hash(),
+                self.transactions.clone(),
+            );
             self.miner.mine(new_block, preprocessing_sender.clone());
         }
 

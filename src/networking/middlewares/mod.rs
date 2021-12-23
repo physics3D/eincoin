@@ -1,4 +1,3 @@
-mod common;
 mod genesis_middleware;
 mod log_middleware;
 mod middleware;
