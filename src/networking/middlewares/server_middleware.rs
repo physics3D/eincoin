@@ -31,7 +31,7 @@ impl Middleware for ServerMiddleware {
             let address = message.source.unwrap();
             let mut sender = postprocessing_sender.lock().unwrap();
             sender.broadcast(InternalMessage::new(
-                MessageType::SendBlockchain(all_blocks.len()),
+                MessageType::SendBlockchain(all_blocks.len(), chain.unmined_transactions.len()),
                 MessageSource::Localhost,
                 MessageDest::Single(address.clone()),
             ));
@@ -44,10 +44,19 @@ impl Middleware for ServerMiddleware {
                     MessageDest::Single(address.clone()),
                 ));
             }
+
+            for transaction in &chain.unmined_transactions {
+                sender.broadcast(InternalMessage::new(
+                    MessageType::SendBlockchainTransaction(transaction.clone()),
+                    MessageSource::Localhost,
+                    MessageDest::Single(address.clone()),
+                ));
+            }
+
             return;
         }
 
-        if let MessageType::SendBlockchain(_) = message.message.message_type {
+        if let MessageType::SendBlockchain(_, _) = message.message.message_type {
             return;
         }
         if let MessageType::SendBlockchainBlock(_) = message.message.message_type {

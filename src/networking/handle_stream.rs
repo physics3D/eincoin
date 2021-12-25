@@ -28,8 +28,8 @@ pub fn handle_stream(
     let address_clone = address.clone();
 
     // sender thread
-    thread::spawn(move || loop {
-        if let Ok(msg) = receiver.recv() {
+    thread::spawn(move || {
+        while let Ok(msg) = receiver.recv() {
             if msg.should_be_send_to(&address) {
                 if let Err(_) = stream.write_all(&bincode::serialize(&msg.message).unwrap()) {
                     // connection shut down
@@ -44,22 +44,20 @@ pub fn handle_stream(
     thread::spawn(move || {
         let mut buf = [0; BUFFER_SIZE];
 
-        loop {
-            if let Ok(bytes) = stream_clone.read(&mut buf) {
-                if bytes == 0 {
-                    // connection shut down
-                    info!("The connection to {} was shut down", address_clone);
-                    break;
-                }
-
-                let message = InternalMessage::from_message(
-                    bincode::deserialize(&buf[0..bytes]).unwrap(),
-                    MessageSource::Foreign(address_clone.clone()),
-                    MessageDest::Localhost,
-                );
-
-                sender.send(message).unwrap();
+        while let Ok(bytes) = stream_clone.read(&mut buf) {
+            if bytes == 0 {
+                // connection shut down
+                info!("The connection to {} was shut down", address_clone);
+                break;
             }
+
+            let message = InternalMessage::from_message(
+                bincode::deserialize(&buf[0..bytes]).unwrap(),
+                MessageSource::Foreign(address_clone.clone()),
+                MessageDest::Localhost,
+            );
+
+            sender.send(message).unwrap();
         }
     });
 }

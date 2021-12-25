@@ -67,10 +67,25 @@ pub fn interactive(addr: String, port: String, private_key_file: PathBuf) {
                         continue;
                     }
                 };
-                let payee_public_key = RsaPublicKey::from_public_key_pem(
-                    &read_to_string(PathBuf::from(command[2])).unwrap(),
-                )
-                .unwrap();
+                let payee_public_key = match RsaPublicKey::from_public_key_pem(
+                    &match read_to_string(PathBuf::from(command[2])) {
+                        Ok(string) => string,
+                        Err(_) => {
+                            error!("Failed to read the key from {}", command[2]);
+                            continue;
+                        }
+                    },
+                ) {
+                    Ok(key) => key,
+                    Err(err) => {
+                        error!(
+                            "{:?} is not a PEM-encoded private key file. Most probably you provided a public key file instead: {}",
+                            command[2],
+                            err
+                        );
+                        continue;
+                    }
+                };
 
                 match wallet.send_money(amount, payee_public_key, sender.clone()) {
                     Ok(_) => {

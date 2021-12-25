@@ -1,11 +1,12 @@
 use std::{fs::read_to_string, path::PathBuf, process::exit, thread, time::Duration};
 
-use log::{error, info};
+use log::info;
 use rsa::{pkcs8::FromPublicKey, RsaPublicKey};
 
 use crate::{
     blockchain::{Blockchain, Wallet},
     networking::{LogMiddleware, NetworkingManager, NodeMiddleware},
+    util::LogExpect,
 };
 
 pub fn transaction(
@@ -26,14 +27,12 @@ pub fn transaction(
 
     networking_manager.add_middleware(LogMiddleware);
     networking_manager.add_middleware(NodeMiddleware::new(false, move |_, sender, _| {
-        match wallet.send_money(amount, payee_public_key.clone(), sender) {
-            Ok(_) => {
-                info!("Sent {} eincoin", amount);
-                // todo: find a better way than that
-                thread::sleep(Duration::from_secs(1));
-            }
-            Err(err) => error!("Error while sending the money: {}", err),
-        }
+        wallet
+            .send_money(amount, payee_public_key.clone(), sender)
+            .log_expect("Error while sending the money");
+        info!("Sent {} eincoin", amount);
+        // todo: find a better way than that
+        thread::sleep(Duration::from_secs(1));
         exit(0);
     }));
 

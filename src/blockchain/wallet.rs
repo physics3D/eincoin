@@ -1,12 +1,10 @@
 use std::{
     fs,
     path::PathBuf,
-    process::exit,
     sync::{Arc, Mutex},
 };
 
 use bus::Bus;
-use log::error;
 
 use rand::rngs::OsRng;
 use rsa::{
@@ -18,6 +16,7 @@ use rsa::{
 use crate::{
     consts::KEY_PAIR_LENGTH,
     networking::{InternalMessage, MessageDest, MessageSource, MessageType},
+    util::LogExpect,
 };
 
 use super::{Blockchain, Transaction};
@@ -42,18 +41,15 @@ impl Wallet {
     }
 
     pub fn new_from_keyfile(private_key_file: PathBuf) -> Self {
-        let private_key_string = match fs::read_to_string(&private_key_file) {
-            Ok(file_content) => file_content,
-            Err(err) => {
-                error!(
-                    "Failed to read the key from {:?} because of {}",
-                    private_key_file, err
-                );
-                exit(0);
-            }
-        };
+        let private_key_string = fs::read_to_string(&private_key_file).log_expect(&format!(
+            "Failed to read the key from {:?}",
+            private_key_file
+        ));
 
-        let private_key = RsaPrivateKey::from_pkcs8_pem(&private_key_string).unwrap();
+        let private_key = RsaPrivateKey::from_pkcs8_pem(&private_key_string).log_expect(&format!(
+            "{:?} is not a PEM-encoded private key file. Most probably you provided a public key file instead",
+            private_key_file
+        ));
         let public_key = private_key.to_public_key();
 
         Self {

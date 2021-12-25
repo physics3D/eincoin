@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use bus::Bus;
 use std::sync::mpsc::{channel, Receiver, Sender};
 
-use crate::{blockchain::Blockchain, consts::BUFFER_SIZE, util::EincoinError};
+use crate::{blockchain::Blockchain, consts::BUFFER_SIZE};
 
 use super::{middlewares::Middleware, Client, InternalMessage, Server};
 
@@ -17,7 +17,7 @@ pub struct NetworkingManager {
 }
 
 impl NetworkingManager {
-    pub fn new(addr: Option<String>, server_port: Option<String>) -> Result<Self, EincoinError> {
+    pub fn new(addr: Option<String>, server_port: Option<String>) -> Result<Self, String> {
         let (incoming_queue_sender, incoming_queue_receiver) = channel();
         let outgoing_queue_sender = Arc::new(Mutex::new(Bus::new(BUFFER_SIZE)));
 
@@ -41,11 +41,7 @@ impl NetworkingManager {
                     outgoing_queue_sender.lock().unwrap().add_rx(),
                 ) {
                     Ok(client) => client,
-                    Err(_) => {
-                        return Err(EincoinError::new(
-                            "server at ".to_string() + &client_addr + " unavailable",
-                        ))
-                    }
+                    Err(_) => return Err("server at ".to_string() + &client_addr + " unavailable"),
                 },
             );
         }

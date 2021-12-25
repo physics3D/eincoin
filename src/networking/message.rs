@@ -8,8 +8,9 @@ use crate::{
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum MessageType {
     Connect,
-    SendBlockchain(usize),
+    SendBlockchain(usize, usize),
     SendBlockchainBlock(Block),
+    SendBlockchainTransaction(Transaction),
     Transaction(Transaction),
     MinedBlock(Block),
 }
@@ -18,10 +19,11 @@ impl MessageType {
     pub fn to_string(&self) -> String {
         match self {
             MessageType::Connect => "Connect",
-            MessageType::SendBlockchain(_) => "SendBlockchain",
+            MessageType::SendBlockchain(_, _) => "SendBlockchain",
             MessageType::Transaction(_) => "Transaction",
             MessageType::MinedBlock(_) => "MinedBlock",
             MessageType::SendBlockchainBlock(_) => "SendBlockchainBlock",
+            MessageType::SendBlockchainTransaction(_) => "SendBlockchainTransaction",
         }
         .to_string()
     }

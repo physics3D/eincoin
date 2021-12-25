@@ -8,6 +8,7 @@ use super::{Block, Transaction};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Blockchain {
     pub chain: Option<Block>,
+    pub unmined_transactions: Vec<Transaction>,
 }
 
 impl Blockchain {
@@ -23,11 +24,15 @@ impl Blockchain {
 
         Self {
             chain: Some(genesis_block),
+            unmined_transactions: vec![],
         }
     }
 
     pub fn new_empty() -> Self {
-        Self { chain: None }
+        Self {
+            chain: None,
+            unmined_transactions: vec![],
+        }
     }
 
     pub fn verify(&self) -> bool {

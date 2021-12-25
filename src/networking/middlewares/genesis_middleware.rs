@@ -23,17 +23,20 @@ impl Middleware for GenesisMiddleware {
     ) {
         match &message.message.message_type {
             MessageType::Connect => {}
-            MessageType::SendBlockchain(_) => {
-                warn!("Someone send the root node a blockchain");
+            MessageType::SendBlockchain(_, _) => {
+                warn!("Someone sent the root node a blockchain");
             }
             MessageType::Transaction(_) => {}
             MessageType::MinedBlock(block) => {
                 if !chain.push_block(block.clone()) {
-                    warn!("Someone send a wrong block");
+                    warn!("Someone sent a wrong block");
                 }
             }
             MessageType::SendBlockchainBlock(_) => {
-                warn!("Someone send the root node a blockchain block")
+                warn!("Someone sent the root node a blockchain block")
+            }
+            MessageType::SendBlockchainTransaction(_) => {
+                warn!("Someone sent the root node a blockchain transaction");
             }
         }
     }

@@ -1,6 +1,6 @@
 use std::{
     error::Error,
-    fmt::Display,
+    process::exit,
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -24,22 +24,18 @@ pub fn time_since_unix_epoch() -> u128 {
         .as_millis()
 }
 
-#[derive(Debug)]
-pub struct EincoinError {
-    msg: String,
+pub trait LogExpect<T, E: Error> {
+    fn log_expect(self, message: &str) -> T;
 }
 
-impl EincoinError {
-    pub fn new(msg: String) -> Self {
-        error!("{}", msg);
-        Self { msg: msg }
+impl<T, E: Error> LogExpect<T, E> for Result<T, E> {
+    fn log_expect(self, message: &str) -> T {
+        match self {
+            Ok(value) => value,
+            Err(err) => {
+                error!("{}: {}", message, err);
+                exit(1);
+            }
+        }
     }
 }
-
-impl Display for EincoinError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("{}", self))
-    }
-}
-
-impl Error for EincoinError {}
