@@ -1,0 +1,41 @@
+build:
+  - shell: cargo build --release
+
+gen-genesis-key:
+  - shell: cargo run --release --quiet -- gen-key keyfiles/genesis-key
+
+gen-key:
+  - shell: cargo run --release --quiet -- gen-key keyfiles/key
+
+gen-keys:
+  - shell: mkdir keyfiles
+  - task: gen-genesis-key
+  - task: gen-key
+
+clean:
+  - shell: rm -r keyfiles
+
+genesis:
+  - shell:
+      # start cargo, wait 5 seconds, kill cargo
+      cargo run --release --quiet -- genesis -s33333 keyfiles/genesis-key.priv.pem & PID=$!; sleep 5; kill $PID
+
+full-node:
+  - shell: sleep 3; cargo run --release --quiet -- full-node localhost -p33333 -s3333
+
+miner:
+  - shell: sleep 5; cargo run --release --quiet -- full-node localhost -mk keyfiles/genesis-key.priv.pem
+
+start:
+  - task: build
+  - task: gen-keys
+  - parallel:
+      - task: genesis
+      - task: full-node
+      - task: miner
+
+genesis-shell:
+  - shell: cargo run --release --quiet -- interactive localhost keyfiles/genesis-key.priv.pem
+
+key-shell:
+  - shell: cargo run --release --quiet -- interactive localhost keyfiles/key.priv.pem

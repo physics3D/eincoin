@@ -15,7 +15,7 @@ use crate::{
 };
 
 pub struct Miner {
-    killswitch_sender: Option<Sender<bool>>,
+    killswitch_sender: Option<Sender<()>>,
     wallet: Wallet,
 }
 
@@ -62,7 +62,7 @@ impl Miner {
 
     pub fn abort(&mut self) {
         if let Some(sender) = &self.killswitch_sender {
-            match sender.send(true) {
+            match sender.send(()) {
                 Ok(_) => info!("Killing miner"),
                 Err(_) => {}
             };

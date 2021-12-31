@@ -19,11 +19,16 @@ pub fn transaction(
     let wallet = Wallet::new_from_keyfile(private_key_file);
     let mut chain = Blockchain::new_empty();
 
-    let mut networking_manager = NetworkingManager::new(Some(addr + ":" + &port), None).unwrap();
+    let mut networking_manager = NetworkingManager::new(Some(addr + ":" + &port), None);
 
-    let payee_public_key =
-        RsaPublicKey::from_public_key_pem(&read_to_string(payee_public_key.clone()).unwrap())
-            .unwrap();
+    let payee_public_key = RsaPublicKey::from_public_key_pem(&read_to_string(
+        &payee_public_key,
+    )
+    .log_expect(&format!("Failed to read the key form {:?}", &payee_public_key)))
+    .log_expect(&format!(
+                "{:?} is not a PEM-encoded private key file. Most probably you provided a private key file instead",
+                &payee_public_key
+        ));
 
     networking_manager.add_middleware(LogMiddleware);
     networking_manager.add_middleware(NodeMiddleware::new(false, move |_, sender, _| {

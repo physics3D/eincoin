@@ -60,7 +60,7 @@ pub enum Command {
     Genesis {
         /// The port of the server
         #[structopt(short, long, default_value = "3333")]
-        port: String,
+        server: String,
         /// The file with your wallet's private key
         #[structopt(parse(from_os_str))]
         private_key_file: PathBuf,

@@ -40,10 +40,10 @@ fn main() {
             full_node(addr, port, miner, server, private_key_file);
         }
         Command::Genesis {
-            port,
+            server,
             private_key_file,
         } => {
-            genesis(port, private_key_file);
+            genesis(server, private_key_file);
         }
         Command::Transaction {
             addr,

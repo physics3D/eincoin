@@ -17,8 +17,7 @@ pub fn full_node(
     // its an ordinary client/server
     let mut chain = Blockchain::new_empty();
 
-    let mut networking_manager =
-        NetworkingManager::new(Some(addr + ":" + &port), server.clone()).unwrap();
+    let mut networking_manager = NetworkingManager::new(Some(addr + ":" + &port), server.clone());
 
     networking_manager.add_middleware(LogMiddleware);
     networking_manager.add_middleware(NodeMiddleware::new(server.is_some(), |_, _, _| {}));

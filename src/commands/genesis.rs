@@ -12,7 +12,7 @@ pub fn genesis(port: String, private_key_file: PathBuf) {
     let wallet = Wallet::new_from_keyfile(private_key_file);
     let mut chain = Blockchain::new(wallet.public_key.clone());
 
-    let mut networking_manager = NetworkingManager::new(None, Some(port)).unwrap();
+    let mut networking_manager = NetworkingManager::new(None, Some(port));
 
     networking_manager.add_middleware(LogMiddleware);
     networking_manager.add_middleware(GenesisMiddleware);

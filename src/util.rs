@@ -24,11 +24,11 @@ pub fn time_since_unix_epoch() -> u128 {
         .as_millis()
 }
 
-pub trait LogExpect<T, E: Error> {
+pub trait LogExpect<T> {
     fn log_expect(self, message: &str) -> T;
 }
 
-impl<T, E: Error> LogExpect<T, E> for Result<T, E> {
+impl<T, E: Error> LogExpect<T> for Result<T, E> {
     fn log_expect(self, message: &str) -> T {
         match self {
             Ok(value) => value,

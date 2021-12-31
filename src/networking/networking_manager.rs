@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use bus::Bus;
 use std::sync::mpsc::{channel, Receiver, Sender};
 
-use crate::{blockchain::Blockchain, consts::BUFFER_SIZE};
+use crate::{blockchain::Blockchain, consts::BUFFER_SIZE, util::LogExpect};
 
 use super::{middlewares::Middleware, Client, InternalMessage, Server};
 
@@ -17,7 +17,7 @@ pub struct NetworkingManager {
 }
 
 impl NetworkingManager {
-    pub fn new(addr: Option<String>, server_port: Option<String>) -> Result<Self, String> {
+    pub fn new(addr: Option<String>, server_port: Option<String>) -> Self {
         let (incoming_queue_sender, incoming_queue_receiver) = channel();
         let outgoing_queue_sender = Arc::new(Mutex::new(Bus::new(BUFFER_SIZE)));
 
@@ -25,24 +25,28 @@ impl NetworkingManager {
         let mut local_client = None;
 
         if let Some(port) = server_port {
-            local_server = Some(Server::new(
-                "127.0.0.1:".to_string() + &port,
-                incoming_queue_sender.clone(),
-                outgoing_queue_sender.clone(),
-            ));
+            local_server = Some(
+                Server::new(
+                    "127.0.0.1:".to_string() + &port,
+                    incoming_queue_sender.clone(),
+                    outgoing_queue_sender.clone(),
+                )
+                .log_expect(&format!(
+                    "The port at {} is already in use. Please use another port",
+                    port
+                )),
+            );
         }
 
         if addr.is_some() {
             let client_addr = addr.unwrap();
             local_client = Some(
-                match Client::new(
+                Client::new(
                     client_addr.clone(),
                     incoming_queue_sender.clone(),
                     outgoing_queue_sender.lock().unwrap().add_rx(),
-                ) {
-                    Ok(client) => client,
-                    Err(_) => return Err("server at ".to_string() + &client_addr + " unavailable"),
-                },
+                )
+                .log_expect(&format!("Server at {} unavailable", client_addr)),
             );
         }
 
@@ -55,7 +59,7 @@ impl NetworkingManager {
             middlewares: vec![],
         };
 
-        Ok(networking_manager)
+        networking_manager
     }
 
     pub fn add_middleware(&mut self, middleware: impl Middleware + 'static) {

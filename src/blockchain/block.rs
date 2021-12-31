@@ -31,7 +31,7 @@ impl Block {
             prev_hash,
             transactions,
             date: time_since_unix_epoch(),
-            nonce: Self::generate_nonce(),
+            nonce: random(),
             children: vec![],
         }
     }
@@ -46,10 +46,6 @@ impl Block {
             })
             .unwrap(),
         )
-    }
-
-    pub fn generate_nonce() -> u64 {
-        random()
     }
 
     pub fn verify_nonce(&self) -> bool {

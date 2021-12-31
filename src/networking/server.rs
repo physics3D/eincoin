@@ -1,4 +1,5 @@
 use std::{
+    io::Result,
     net::TcpListener,
     sync::{Arc, Mutex},
     thread,
@@ -23,12 +24,12 @@ impl Server {
         addr: String,
         incoming_queue_sender: Sender<InternalMessage>,
         outgoing_queue_receiver_adder: Arc<Mutex<Bus<InternalMessage>>>,
-    ) -> Self {
-        Self {
-            server: Some(TcpListener::bind(addr).unwrap()),
+    ) -> Result<Self> {
+        Ok(Self {
+            server: Some(TcpListener::bind(addr)?),
             incoming_queue_sender,
             outgoing_queue_receiver_adder,
-        }
+        })
     }
 
     pub fn start_networking(&mut self) {

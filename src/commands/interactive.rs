@@ -20,7 +20,7 @@ pub fn interactive(addr: String, port: String, private_key_file: PathBuf) {
     let wallet = Wallet::new_from_keyfile(private_key_file);
     let mut chain = Blockchain::new_empty();
 
-    let mut networking_manager = NetworkingManager::new(Some(addr + ":" + &port), None).unwrap();
+    let mut networking_manager = NetworkingManager::new(Some(addr + ":" + &port), None);
     networking_manager.add_middleware(LogMiddleware);
     networking_manager.add_middleware(NodeMiddleware::new(false, |_, _, _| {}));
     networking_manager.start_client_server();
@@ -79,7 +79,7 @@ pub fn interactive(addr: String, port: String, private_key_file: PathBuf) {
                     Ok(key) => key,
                     Err(err) => {
                         error!(
-                            "{:?} is not a PEM-encoded private key file. Most probably you provided a public key file instead: {}",
+                            "{:?} is not a PEM-encoded private key file. Most probably you provided a private key file instead: {}",
                             command[2],
                             err
                         );
@@ -98,6 +98,9 @@ pub fn interactive(addr: String, port: String, private_key_file: PathBuf) {
             }
             "chain" => {
                 println!("{:#?}", chain);
+            }
+            "clear" => {
+                print!("\x1B[2J");
             }
             "exit" => exit(0),
             _ => error!("Unknown command"),
