@@ -61,10 +61,7 @@ impl Block {
                 .take(self.transactions.len() - 1)
                 .all(|transaction| transaction.verify())
             && self.transactions.last().unwrap().amount == MINING_REWARD
-            && self
-                .children
-                .iter()
-                .all(|child| child.verify(&self.prev_hash))
+            && self.children.iter().all(|child| child.verify(&self.hash()))
     }
 
     pub fn push(&mut self, block: &Block) -> bool {

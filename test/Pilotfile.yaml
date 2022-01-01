@@ -9,8 +9,9 @@ gen-key:
 
 gen-keys:
   - shell: mkdir keyfiles
-  - task: gen-genesis-key
-  - task: gen-key
+  - parallel:
+    - task: gen-genesis-key
+    - task: gen-key
 
 clean:
   - shell: rm -r keyfiles
@@ -21,14 +22,15 @@ genesis:
       cargo run --release --quiet -- genesis -s33333 keyfiles/genesis-key.priv.pem & PID=$!; sleep 5; kill $PID
 
 full-node:
-  - shell: sleep 3; cargo run --release --quiet -- full-node localhost -p33333 -s3333
+  - shell: sleep 1; cargo run --release --quiet -- full-node localhost -p33333 -s3333
 
 miner:
-  - shell: sleep 5; cargo run --release --quiet -- full-node localhost -mk keyfiles/genesis-key.priv.pem
+  - shell: sleep 2; cargo run --release --quiet -- full-node localhost -mk keyfiles/genesis-key.priv.pem
 
 start:
   - task: build
   - task: gen-keys
+  - shell: killall eincoin
   - parallel:
       - task: genesis
       - task: full-node
@@ -39,3 +41,17 @@ genesis-shell:
 
 key-shell:
   - shell: cargo run --release --quiet -- interactive localhost keyfiles/key.priv.pem
+
+test-transaction:
+  - shell: |
+      sleep 6
+      cargo run --release --quiet -- -lWARN balance 127.0.0.1 keyfiles/genesis-key.priv.pem
+      cargo run --release --quiet -- -lWARN balance localhost keyfiles/key.priv.pem
+      cargo run --release --quiet -- transaction localhost 35 keyfiles/key.pub.pem keyfiles/genesis-key.priv.pem
+      cargo run --release --quiet -- -lWARN balance 127.0.0.1 keyfiles/genesis-key.priv.pem
+      cargo run --release --quiet -- -lWARN balance localhost keyfiles/key.priv.pem
+
+test:
+  - parallel:
+      - task: start
+      - task: test-transaction
