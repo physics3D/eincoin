@@ -16,6 +16,9 @@ gen-keys:
 clean:
   - shell: rm -r keyfiles
 
+loc:
+  - shell: wc -l ../src/**/*.rs
+
 genesis:
   - shell:
       # start cargo, wait 5 seconds, kill cargo
@@ -24,8 +27,11 @@ genesis:
 full-node:
   - shell: sleep 1; cargo run --release --quiet -- full-node localhost -p33333 -s3333
 
-miner:
+genesis-miner:
   - shell: sleep 2; cargo run --release --quiet -- full-node localhost -mk keyfiles/genesis-key.priv.pem
+
+key-miner:
+  - shell: sleep 2; cargo run --release --quiet -- full-node localhost -mk keyfiles/key.priv.pem
 
 start:
   - task: build
@@ -34,7 +40,8 @@ start:
   - parallel:
       - task: genesis
       - task: full-node
-      - task: miner
+      - task: genesis-miner
+      - task: key-miner
 
 genesis-shell:
   - shell: cargo run --release --quiet -- interactive localhost keyfiles/genesis-key.priv.pem
