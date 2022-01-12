@@ -22,7 +22,7 @@ pub fn interactive(addr: String, port: String, private_key_file: PathBuf) {
 
     let mut networking_manager = NetworkingManager::new(Some(addr + ":" + &port), None);
     networking_manager.add_middleware(LogMiddleware);
-    networking_manager.add_middleware(NodeMiddleware::new(false, |_, _, _| {}));
+    networking_manager.add_middleware(NodeMiddleware::new(false, false, |_, _, _| {}));
     networking_manager.start_client_server();
 
     let sender = networking_manager.get_sender();
@@ -87,7 +87,7 @@ pub fn interactive(addr: String, port: String, private_key_file: PathBuf) {
                     }
                 };
 
-                match wallet.send_money(amount, payee_public_key, sender.clone()) {
+                match wallet.send_money(amount, payee_public_key, sender.clone(), &mut chain) {
                     Ok(_) => {
                         info!("Sent {} eincoin", amount);
                         // todo: find a better way than that

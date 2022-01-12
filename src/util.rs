@@ -1,5 +1,5 @@
 use std::{
-    error::Error,
+    fmt::Display,
     process::exit,
     time::{SystemTime, UNIX_EPOCH},
 };
@@ -28,7 +28,7 @@ pub trait LogExpect<T> {
     fn log_expect(self, message: &str) -> T;
 }
 
-impl<T, E: Error> LogExpect<T> for Result<T, E> {
+impl<T, E: Display> LogExpect<T> for Result<T, E> {
     fn log_expect(self, message: &str) -> T {
         match self {
             Ok(value) => value,

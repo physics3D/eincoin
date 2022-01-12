@@ -11,6 +11,7 @@ pub fn genesis(port: String, private_key_file: PathBuf) {
     // its a genesis node setting up a new blockchain
     let wallet = Wallet::new_from_keyfile(private_key_file);
     let mut chain = Blockchain::new(wallet.public_key.clone());
+    chain.compute_utxos();
 
     let mut networking_manager = NetworkingManager::new(None, Some(port));
 

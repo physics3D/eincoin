@@ -16,6 +16,7 @@ use super::middleware::Middleware;
 
 pub struct NodeMiddleware {
     is_server: bool,
+    is_miner: bool,
     on_chain_received:
         Box<dyn FnMut(&Sender<InternalMessage>, Arc<Mutex<Bus<InternalMessage>>>, &mut Blockchain)>,
     block_index: usize,
@@ -26,11 +27,13 @@ pub struct NodeMiddleware {
 impl NodeMiddleware {
     pub fn new(
         is_server: bool,
+        is_miner: bool,
         on_chain_received: impl FnMut(&Sender<InternalMessage>, Arc<Mutex<Bus<InternalMessage>>>, &mut Blockchain)
             + 'static,
     ) -> Self {
         Self {
             is_server,
+            is_miner,
             block_index: 0,
             transaction_index: 0,
             num_blocks_in_chain: 0,
@@ -91,6 +94,7 @@ impl Middleware for NodeMiddleware {
                     info!("Verifying chain...");
                     if chain.verify() {
                         info!("Chain is correct");
+                        chain.compute_utxos();
                     } else {
                         error!("Chain is wrong!");
                         info!("{:#?}", chain);
@@ -121,9 +125,11 @@ impl Middleware for NodeMiddleware {
             }
             MessageType::Transaction(_) => {}
             MessageType::MinedBlock(block) => {
-                if !chain.push_block(block.clone()) {
-                    warn!("Received a wrong mined block");
-                    return;
+                if !self.is_miner {
+                    if !chain.push_block(block.clone()) {
+                        warn!("Received a wrong mined block");
+                        return;
+                    }
                 }
 
                 if !self.is_server {

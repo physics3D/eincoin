@@ -5,7 +5,7 @@ use crate::{
 use rand::random;
 use serde::{Deserialize, Serialize};
 
-use super::Transaction;
+use super::{Blockchain, Transaction};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Block {
@@ -52,21 +52,26 @@ impl Block {
         self.hash().starts_with(&NEEDED_HASH_START)
     }
 
-    pub fn verify(&self, prev_hash: &[u8]) -> bool {
+    pub fn verify(&self, prev_hash: &[u8], chain: &Blockchain) -> bool {
+        let self_hash = self.hash();
+
         self.prev_hash == prev_hash
             && self.verify_nonce()
             && self
                 .transactions
                 .iter()
                 .take(self.transactions.len() - 1)
-                .all(|transaction| transaction.verify())
-            && self.transactions.last().unwrap().amount == MINING_REWARD
-            && self.children.iter().all(|child| child.verify(&self.hash()))
+                .all(|transaction| transaction.verify(chain))
+            && self.transactions.last().unwrap().transaction_outputs[0].amount == MINING_REWARD
+            && self
+                .children
+                .iter()
+                .all(|child| child.verify(&self_hash, chain))
     }
 
-    pub fn push(&mut self, block: &Block) -> bool {
+    pub fn push(&mut self, block: &Block, chain: &Blockchain) -> bool {
         if block.prev_hash == self.hash() {
-            if block.verify(&self.hash()) {
+            if block.verify(&self.hash(), chain) {
                 self.children.push(block.clone());
                 return true;
             } else {
@@ -74,7 +79,7 @@ impl Block {
             }
         } else {
             for child in &mut self.children {
-                if child.push(block) {
+                if child.push(block, chain) {
                     return true;
                 }
             }

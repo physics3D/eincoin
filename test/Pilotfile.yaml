@@ -55,10 +55,13 @@ test-transaction:
       cargo run --release --quiet -- -lWARN balance 127.0.0.1 keyfiles/genesis-key.priv.pem
       cargo run --release --quiet -- -lWARN balance localhost keyfiles/key.priv.pem
       cargo run --release --quiet -- transaction localhost 35 keyfiles/key.pub.pem keyfiles/genesis-key.priv.pem
+      # give time to mine
+      sleep 2
       cargo run --release --quiet -- -lWARN balance 127.0.0.1 keyfiles/genesis-key.priv.pem
       cargo run --release --quiet -- -lWARN balance localhost keyfiles/key.priv.pem
 
 test:
+  - task: build
   - parallel:
       - task: start
       - task: test-transaction

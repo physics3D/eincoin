@@ -31,15 +31,19 @@ pub fn transaction(
         ));
 
     networking_manager.add_middleware(LogMiddleware);
-    networking_manager.add_middleware(NodeMiddleware::new(false, move |_, sender, _| {
-        wallet
-            .send_money(amount, payee_public_key.clone(), sender)
-            .log_expect("Error while sending the money");
-        info!("Sent {} eincoin", amount);
-        // todo: find a better way than that
-        thread::sleep(Duration::from_secs(1));
-        exit(0);
-    }));
+    networking_manager.add_middleware(NodeMiddleware::new(
+        false,
+        false,
+        move |_, sender, blockchain| {
+            wallet
+                .send_money(amount, payee_public_key.clone(), sender, blockchain)
+                .log_expect("Error while sending the money");
+            info!("Sent {} eincoin", amount);
+            // todo: find a better way than that
+            thread::sleep(Duration::from_secs(1));
+            exit(0);
+        },
+    ));
 
     networking_manager.start_networking(&mut chain);
 }

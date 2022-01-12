@@ -8,7 +8,6 @@ use bus::Bus;
 
 use rand::rngs::OsRng;
 use rsa::{
-    errors::Error,
     pkcs8::{FromPrivateKey, ToPrivateKey, ToPublicKey},
     RsaPrivateKey, RsaPublicKey,
 };
@@ -70,8 +69,12 @@ impl Wallet {
         amount: u32,
         payee_public_key: RsaPublicKey,
         sender: Arc<Mutex<Bus<InternalMessage>>>,
-    ) -> Result<(), Error> {
-        let transaction = Transaction::new(amount, Some(self.clone()), payee_public_key.clone());
+        chain: &mut Blockchain,
+    ) -> Result<(), String> {
+        let transaction =
+            Transaction::new(amount, Some(self.clone()), payee_public_key.clone(), chain)?;
+
+        chain.update_utxos(transaction.transaction_inputs.clone());
 
         sender.lock().unwrap().broadcast(InternalMessage::new(
             MessageType::Transaction(transaction),
@@ -83,22 +86,11 @@ impl Wallet {
     }
 
     pub fn compute_balance(&self, chain: &mut Blockchain) -> u32 {
-        let mut money = 0;
-
-        for block in &chain.main_chain() {
-            for transaction in &block.transactions {
-                if transaction.payee == self.public_key {
-                    money += transaction.amount;
-                }
-
-                if let Some(payer) = &transaction.payer {
-                    if *payer == self.public_key {
-                        money -= transaction.amount;
-                    }
-                }
-            }
-        }
-
-        money
+        chain
+            .utxos
+            .iter()
+            .filter(|(_, _, tx_out)| tx_out.payee == self.public_key)
+            .map(|(_, _, tx_out)| tx_out.amount)
+            .sum()
     }
 }

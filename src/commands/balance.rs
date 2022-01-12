@@ -12,7 +12,7 @@ pub fn balance(addr: String, port: String, private_key_file: PathBuf) {
     let mut networking_manager = NetworkingManager::new(Some(addr + ":" + &port), None);
 
     networking_manager.add_middleware(LogMiddleware);
-    networking_manager.add_middleware(NodeMiddleware::new(false, move |_, _, chain| {
+    networking_manager.add_middleware(NodeMiddleware::new(false, false, move |_, _, chain| {
         println!(
             "Your wallet's current balance is: {}",
             wallet.compute_balance(chain)
