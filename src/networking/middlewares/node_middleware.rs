@@ -49,6 +49,18 @@ impl Middleware for NodeMiddleware {
         chain: &mut Blockchain,
     ) {
         match &message.message.message_type {
+            &MessageType::MinedBlock(_) => {}
+            &MessageType::SendBlockchainBlock(_) => {}
+            _ => {
+                if self.block_index < self.num_blocks_in_chain
+                    || self.transaction_index < self.num_unmined_transactions_in_chain
+                {
+                    warn!("Server takes ages to send the blockchain!");
+                }
+            }
+        }
+
+        match &message.message.message_type {
             MessageType::Connect => {
                 if !self.is_server {
                     warn!("The server tried to connect to the client");
@@ -96,7 +108,7 @@ impl Middleware for NodeMiddleware {
                 chain.unmined_transactions.push(transaction.clone());
 
                 info!(
-                    "Received block {}/{}",
+                    "Received transaction {}/{}",
                     self.transaction_index + 1,
                     self.num_unmined_transactions_in_chain
                 );
