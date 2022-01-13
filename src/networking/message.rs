@@ -44,7 +44,7 @@ impl Message {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum MessageSource {
     Localhost,
     Foreign(String),

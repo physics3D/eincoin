@@ -74,8 +74,6 @@ impl Wallet {
         let transaction =
             Transaction::new(amount, Some(self.clone()), payee_public_key.clone(), chain)?;
 
-        chain.update_utxos(transaction.transaction_inputs.clone());
-
         sender.lock().unwrap().broadcast(InternalMessage::new(
             MessageType::Transaction(transaction),
             MessageSource::Localhost,

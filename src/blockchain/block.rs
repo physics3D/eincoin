@@ -92,19 +92,20 @@ impl Block {
         let mut longest_chain = vec![self.clone()];
 
         longest_chain.append(
-            // get sub-chains from children
-            &mut self
-                .children
-                .iter()
-                .map(|child| child.get_longest_chain())
-                // return the longest sub-chain
-                .fold(vec![], |longest_chain, block_longest_chain| {
-                    if block_longest_chain.len() >= longest_chain.len() {
-                        block_longest_chain
-                    } else {
-                        longest_chain
-                    }
-                }),
+            &mut self.children.iter().map(|child|child.get_longest_chain()).max_by_key(|sub_chain|sub_chain.len()).unwrap_or(vec![])
+            // // get sub-chains from children
+            // &mut self
+            //     .children
+            //     .iter()
+            //     .map(|child| child.get_longest_chain())
+            //     // return the longest sub-chain
+            //     .fold(vec![], |longest_chain, block_longest_chain| {
+            //         if block_longest_chain.len() >= longest_chain.len() {
+            //             block_longest_chain
+            //         } else {
+            //             longest_chain
+            //         }
+            //     }),
         );
 
         longest_chain

@@ -9,7 +9,7 @@ use std::sync::mpsc::Sender;
 
 use crate::{
     blockchain::Blockchain,
-    networking::{InternalMessage, MessageType},
+    networking::{InternalMessage, MessageSource, MessageType},
 };
 
 use super::middleware::Middleware;
@@ -125,7 +125,7 @@ impl Middleware for NodeMiddleware {
             }
             MessageType::Transaction(_) => {}
             MessageType::MinedBlock(block) => {
-                if !self.is_miner {
+                if !self.is_miner || message.source == MessageSource::Localhost {
                     if !chain.push_block(block.clone()) {
                         warn!("Received a wrong mined block");
                         return;

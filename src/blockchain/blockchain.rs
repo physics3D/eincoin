@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::consts::INITIAL_COIN_AMOUNT;
 
-use super::{Block, Transaction, TransactionInput, TransactionOutput};
+use super::{Block, Transaction, TransactionOutput};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Blockchain {
@@ -51,22 +51,17 @@ impl Blockchain {
     }
 
     pub fn push_block(&mut self, block: Block) -> bool {
-        let tx_ins = block
-            .transactions
-            .iter()
-            .flat_map(|transaction| transaction.transaction_inputs.iter())
-            .map(|tx_in| tx_in.clone())
-            .collect();
+        let chain_clone = self.clone();
 
-        let success = if let Some(root) = &mut self.chain.clone() {
-            root.push(&block, &self)
+        let success = if let Some(root) = &mut self.chain {
+            root.push(&block, &chain_clone)
         } else {
             self.chain = Some(block);
             true
         };
 
         if success {
-            self.update_utxos(tx_ins);
+            self.compute_utxos();
         }
 
         success
@@ -82,15 +77,22 @@ impl Blockchain {
 
     pub fn all_blocks(&self) -> Vec<Block> {
         if let Some(root) = &self.chain {
-            root.all_blocks()
+            let mut result = vec![];
+
+            for mut block in root.all_blocks() {
+                block.children = vec![];
+                result.push(block);
+            }
+
+            result
         } else {
             vec![]
         }
     }
 
     pub fn compute_utxos(&mut self) {
-        let all_tx_outs = self.all_blocks();
-        let all_tx_outs: Vec<_> = all_tx_outs
+        let main_chain = self.main_chain();
+        let all_tx_outs: Vec<_> = main_chain
             .iter()
             .flat_map(|block| {
                 block.transactions.iter().flat_map(|transaction| {
@@ -105,8 +107,7 @@ impl Blockchain {
             })
             .collect();
 
-        let all_tx_ins: Vec<_> = self
-            .all_blocks()
+        let all_tx_ins: Vec<_> = main_chain
             .iter()
             .flat_map(|block| {
                 block.transactions.iter().flat_map(|transaction| {
@@ -123,25 +124,6 @@ impl Blockchain {
         self.utxos = all_tx_outs
             .iter()
             .filter(|tx_out| !all_tx_ins.contains(&(tx_out.0.clone(), tx_out.1 as u32)))
-            .map(|(hash, i, utxo)| (hash.clone(), *i as u32, (*utxo).clone()))
-            .collect();
-    }
-
-    pub fn update_utxos(&mut self, transaction_inputs: Vec<TransactionInput>) {
-        let tx_ins: Vec<_> = transaction_inputs
-            .iter()
-            .map(|tx_in| {
-                (
-                    tx_in.prev_transaction_hash.clone(),
-                    tx_in.prev_transaction_index,
-                )
-            })
-            .collect();
-
-        self.utxos = self
-            .utxos
-            .iter()
-            .filter(|tx_out| !tx_ins.contains(&(tx_out.0.clone(), tx_out.1 as u32)))
             .map(|(hash, i, utxo)| (hash.clone(), *i as u32, (*utxo).clone()))
             .collect();
     }

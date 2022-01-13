@@ -17,7 +17,7 @@ clean:
   - shell: rm -r keyfiles
 
 loc:
-  - shell: wc -l ../src/**/*.rs
+  - shell: wc -l ../src/**/*.rs | sort --numeric
 
 genesis:
   - shell:

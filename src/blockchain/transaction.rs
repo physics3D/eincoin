@@ -64,12 +64,13 @@ impl Transaction {
 
             transaction
                 .transaction_outputs
-                .push(TransactionOutput::new(amount, payee.clone()));
+                .push(TransactionOutput::new(amount, payee));
 
+            // change transaction output
             if total_amount > amount {
                 transaction
                     .transaction_outputs
-                    .push(TransactionOutput::new(total_amount - amount, payee));
+                    .push(TransactionOutput::new(total_amount - amount, keypair.public_key.clone()));
             }
         } else {
             transaction.transaction_inputs.push(TransactionInput {
