@@ -1,6 +1,10 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    sync::{Arc, Mutex},
+    thread,
+};
 
 use bus::Bus;
+use log::debug;
 use std::sync::mpsc::{channel, Receiver, Sender};
 
 use crate::{blockchain::Blockchain, consts::BUFFER_SIZE, util::LogExpect};
@@ -79,6 +83,13 @@ impl NetworkingManager {
     }
 
     pub fn run_middlewares(&mut self, message: InternalMessage, chain: &mut Blockchain) {
+        debug!(
+            "Received a {} message from {} to {}",
+            message.message.message_type.to_string(),
+            message.source.to_string(),
+            message.dest.to_string()
+        );
+
         for middleware in &mut self.middlewares {
             middleware.on_message(
                 &message,
@@ -101,6 +112,18 @@ impl NetworkingManager {
         if let Some(server) = &mut self.server {
             server.start_networking();
         }
+
+        let mut receiver = self.outgoing_queue_sender.lock().unwrap().add_rx();
+
+        thread::spawn(move || loop {
+            let msg = receiver.recv().unwrap();
+            debug!(
+                "Sending a {} message from {} to {}",
+                msg.message.message_type.to_string(),
+                msg.source.to_string(),
+                msg.dest.to_string()
+            )
+        });
     }
 
     pub fn get_sender(&self) -> Arc<Mutex<Bus<InternalMessage>>> {

@@ -2,7 +2,7 @@ use std::{path::PathBuf, process::exit};
 
 use crate::{
     blockchain::{Blockchain, Wallet},
-    networking::{LogMiddleware, NetworkingManager, NodeMiddleware},
+    networking::{NetworkingManager, NodeMiddleware},
 };
 
 pub fn balance(addr: String, port: String, private_key_file: PathBuf) {
@@ -11,7 +11,6 @@ pub fn balance(addr: String, port: String, private_key_file: PathBuf) {
 
     let mut networking_manager = NetworkingManager::new(Some(addr + ":" + &port), None);
 
-    networking_manager.add_middleware(LogMiddleware);
     networking_manager.add_middleware(NodeMiddleware::new(false, false, move |_, _, chain| {
         println!(
             "Your wallet's current balance is: {}",

@@ -16,7 +16,7 @@ mod util;
 fn main() {
     let cli_args = CliArgs::from_args();
 
-    setup_loggers(cli_args.clone());
+    setup_loggers(&cli_args);
 
     info!("Started eincoin node");
 

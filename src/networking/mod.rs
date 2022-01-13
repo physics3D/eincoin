@@ -9,7 +9,6 @@ pub use client::Client;
 pub use handle_stream::handle_stream;
 pub use message::{InternalMessage, Message, MessageDest, MessageSource, MessageType};
 pub use middlewares::GenesisMiddleware;
-pub use middlewares::LogMiddleware;
 pub use middlewares::Middleware;
 pub use middlewares::MinerMiddleware;
 pub use middlewares::NodeMiddleware;

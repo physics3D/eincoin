@@ -1,15 +1,15 @@
 use log::LevelFilter;
-use simplelog::{
-    ColorChoice, CombinedLogger, Config, SharedLogger, TermLogger, TerminalMode, WriteLogger,
-};
+use simplelog::{ColorChoice, CombinedLogger, SharedLogger, TermLogger, TerminalMode, WriteLogger};
 use std::{fs::File, path::PathBuf};
 use structopt::StructOpt;
+
+use crate::consts::LOG_CONFIG;
 
 /// A shitty try at implementing a cryptocurrency
 #[derive(StructOpt, Clone)]
 pub struct CliArgs {
     /// the log level
-    #[structopt(short, long, default_value = "Info")]
+    #[structopt(short, long, default_value = "Info", env = "RUST_LOG")]
     log_level: LevelFilter,
     /// save the log to this file
     #[structopt(short = "f", long, parse(from_os_str))]
@@ -105,18 +105,18 @@ pub enum Command {
     },
 }
 
-pub fn setup_loggers(cli_args: CliArgs) {
+pub fn setup_loggers(cli_args: &CliArgs) {
     let mut loggers: Vec<Box<dyn SharedLogger>> = vec![TermLogger::new(
         cli_args.log_level,
-        Config::default(),
+        LOG_CONFIG.clone(),
         TerminalMode::Mixed,
         ColorChoice::Auto,
     )];
 
-    if let Some(path) = cli_args.log_file {
+    if let Some(path) = &cli_args.log_file {
         loggers.push(WriteLogger::new(
             cli_args.log_level,
-            Config::default(),
+            LOG_CONFIG.clone(),
             File::create(path).unwrap(),
         ));
     }

@@ -2,9 +2,7 @@ use std::path::PathBuf;
 
 use crate::{
     blockchain::{Blockchain, Wallet},
-    networking::{
-        LogMiddleware, MinerMiddleware, NetworkingManager, NodeMiddleware, ServerMiddleware,
-    },
+    networking::{MinerMiddleware, NetworkingManager, NodeMiddleware, ServerMiddleware},
 };
 
 pub fn full_node(
@@ -19,7 +17,6 @@ pub fn full_node(
 
     let mut networking_manager = NetworkingManager::new(Some(addr + ":" + &port), server.clone());
 
-    networking_manager.add_middleware(LogMiddleware);
     networking_manager.add_middleware(NodeMiddleware::new(server.is_some(), miner, |_, _, _| {}));
     if miner {
         let wallet = Wallet::new_from_keyfile(private_key_file.unwrap());

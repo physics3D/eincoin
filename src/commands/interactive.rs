@@ -12,7 +12,7 @@ use rsa::{pkcs8::FromPublicKey, RsaPublicKey};
 
 use crate::{
     blockchain::{Blockchain, Wallet},
-    networking::{LogMiddleware, NetworkingManager, NodeMiddleware},
+    networking::{NetworkingManager, NodeMiddleware},
 };
 
 pub fn interactive(addr: String, port: String, private_key_file: PathBuf) {
@@ -21,7 +21,6 @@ pub fn interactive(addr: String, port: String, private_key_file: PathBuf) {
     let mut chain = Blockchain::new_empty();
 
     let mut networking_manager = NetworkingManager::new(Some(addr + ":" + &port), None);
-    networking_manager.add_middleware(LogMiddleware);
     networking_manager.add_middleware(NodeMiddleware::new(false, false, |_, _, _| {}));
     networking_manager.start_client_server();
 

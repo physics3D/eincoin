@@ -5,7 +5,7 @@ use rsa::{pkcs8::FromPublicKey, RsaPublicKey};
 
 use crate::{
     blockchain::{Blockchain, Wallet},
-    networking::{LogMiddleware, NetworkingManager, NodeMiddleware},
+    networking::{NetworkingManager, NodeMiddleware},
     util::LogExpect,
 };
 
@@ -30,7 +30,6 @@ pub fn transaction(
                 &payee_public_key
         ));
 
-    networking_manager.add_middleware(LogMiddleware);
     networking_manager.add_middleware(NodeMiddleware::new(
         false,
         false,

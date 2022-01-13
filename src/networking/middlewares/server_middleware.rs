@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use bus::Bus;
-use log::info;
+use log::debug;
 use std::sync::mpsc::Sender;
 
 use crate::{
@@ -63,7 +63,7 @@ impl Middleware for ServerMiddleware {
             return;
         }
 
-        info!(
+        debug!(
             "Forwarding a {} message",
             message.message.message_type.to_string()
         );

@@ -2,9 +2,7 @@ use std::path::PathBuf;
 
 use crate::{
     blockchain::{Blockchain, Wallet},
-    networking::{
-        GenesisMiddleware, LogMiddleware, MinerMiddleware, NetworkingManager, ServerMiddleware,
-    },
+    networking::{GenesisMiddleware, MinerMiddleware, NetworkingManager, ServerMiddleware},
 };
 
 pub fn genesis(port: String, private_key_file: PathBuf) {
@@ -16,7 +14,6 @@ pub fn genesis(port: String, private_key_file: PathBuf) {
 
     let mut networking_manager = NetworkingManager::new(None, Some(port));
 
-    networking_manager.add_middleware(LogMiddleware);
     networking_manager.add_middleware(GenesisMiddleware);
     networking_manager.add_middleware(MinerMiddleware::new(wallet));
     networking_manager.add_middleware(ServerMiddleware);
