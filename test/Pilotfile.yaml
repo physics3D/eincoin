@@ -44,9 +44,11 @@ start:
       - task: key-miner
 
 genesis-shell:
+  - raw: true
   - shell: cargo run --release --quiet -- interactive localhost keyfiles/genesis-key.priv.pem
 
 key-shell:
+  - raw: true
   - shell: cargo run --release --quiet -- interactive localhost keyfiles/key.priv.pem
 
 test-transaction:
