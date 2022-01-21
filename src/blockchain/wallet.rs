@@ -67,12 +67,18 @@ impl Wallet {
     pub fn send_money(
         &self,
         amount: u32,
+        transaction_fee: u32,
         payee_public_key: RsaPublicKey,
         sender: Arc<Mutex<Bus<InternalMessage>>>,
         chain: &mut Blockchain,
     ) -> Result<(), String> {
-        let transaction =
-            Transaction::new(amount, Some(self.clone()), payee_public_key.clone(), chain)?;
+        let transaction = Transaction::new(
+            amount,
+            transaction_fee,
+            Some(self.clone()),
+            payee_public_key.clone(),
+            chain,
+        )?;
 
         sender.lock().unwrap().broadcast(InternalMessage::new(
             MessageType::Transaction(transaction),

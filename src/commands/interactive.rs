@@ -54,8 +54,8 @@ pub fn interactive(addr: String, port: String, private_key_file: PathBuf) {
                 println!("{}", wallet.compute_balance(&mut chain));
             }
             "transaction" => {
-                if command.len() != 3 {
-                    error!("Usage: transaction <amount> <payee-public-key>");
+                if command.len() != 3 && command.len() != 4 {
+                    error!("Usage: transaction <amount> <payee-public-key> <transaction-fee>");
                     continue;
                 }
 
@@ -63,6 +63,13 @@ pub fn interactive(addr: String, port: String, private_key_file: PathBuf) {
                     Ok(amount) => amount,
                     Err(_) => {
                         error!("The amount has to be a number");
+                        continue;
+                    }
+                };
+                let transaction_fee = match command.get(3).unwrap_or(&"0").parse() {
+                    Ok(amount) => amount,
+                    Err(_) => {
+                        error!("The transaction fee has to be a number");
                         continue;
                     }
                 };
@@ -86,7 +93,13 @@ pub fn interactive(addr: String, port: String, private_key_file: PathBuf) {
                     }
                 };
 
-                match wallet.send_money(amount, payee_public_key, sender.clone(), &mut chain) {
+                match wallet.send_money(
+                    amount,
+                    transaction_fee,
+                    payee_public_key,
+                    sender.clone(),
+                    &mut chain,
+                ) {
                     Ok(_) => {
                         info!("Sent {} eincoin", amount);
                         // todo: find a better way than that

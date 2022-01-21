@@ -15,6 +15,7 @@ pub fn transaction(
     amount: u32,
     payee_public_key: PathBuf,
     private_key_file: PathBuf,
+    transaction_fee: u32,
 ) {
     let wallet = Wallet::new_from_keyfile(private_key_file);
     let mut chain = Blockchain::new_empty();
@@ -35,7 +36,13 @@ pub fn transaction(
         false,
         move |_, sender, blockchain| {
             wallet
-                .send_money(amount, payee_public_key.clone(), sender, blockchain)
+                .send_money(
+                    amount,
+                    transaction_fee,
+                    payee_public_key.clone(),
+                    sender,
+                    blockchain,
+                )
                 .log_expect("Error while sending the money");
             info!("Sent {} eincoin", amount);
             // todo: find a better way than that

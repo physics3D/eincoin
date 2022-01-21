@@ -52,8 +52,14 @@ impl Middleware for MinerMiddleware {
 
             // add the transaction where the miner gets money
             new_block.transactions.push(
-                Transaction::new(MINING_REWARD, None, self.wallet.public_key.clone(), chain)
-                    .unwrap(),
+                Transaction::new(
+                    MINING_REWARD,
+                    0,
+                    None,
+                    self.wallet.public_key.clone(),
+                    chain,
+                )
+                .unwrap(),
             );
 
             for transaction in &mut self.transactions {

@@ -80,6 +80,9 @@ pub enum Command {
         /// The file with your wallet's private key
         #[structopt(parse(from_os_str))]
         private_key_file: PathBuf,
+        /// the transaction fee (for faster validation)
+        #[structopt(short = "f", long, default_value = "0")]
+        transaction_fee: u32,
     },
     /// View your wallet's balance
     Balance {

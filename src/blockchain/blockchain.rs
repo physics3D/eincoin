@@ -20,6 +20,7 @@ impl Blockchain {
             vec![],
             vec![Transaction::new(
                 INITIAL_COIN_AMOUNT,
+                0,
                 None,
                 initial_payee_public_key,
                 &mut blockchain,

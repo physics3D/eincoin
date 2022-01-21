@@ -51,8 +51,16 @@ fn main() {
             amount,
             payee_public_key,
             private_key_file,
+            transaction_fee,
         } => {
-            transaction(addr, port, amount, payee_public_key, private_key_file);
+            transaction(
+                addr,
+                port,
+                amount,
+                payee_public_key,
+                private_key_file,
+                transaction_fee,
+            );
         }
         Command::Balance {
             addr,

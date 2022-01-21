@@ -21,10 +21,13 @@ struct TransactionForCheck {
 impl Transaction {
     pub fn new(
         amount: u32,
+        transaction_fee: u32,
         wallet: Option<Wallet>,
         payee: RsaPublicKey,
         chain: &mut Blockchain,
     ) -> Result<Self, String> {
+        let total_to_pay = amount + transaction_fee;
+
         let mut transaction = Self {
             transaction_inputs: vec![],
             transaction_outputs: vec![],
@@ -58,7 +61,7 @@ impl Transaction {
                 ));
             }
 
-            if total_amount < amount {
+            if total_amount < total_to_pay {
                 return Err("You do not have enough money in this wallet".to_string());
             }
 
@@ -67,10 +70,11 @@ impl Transaction {
                 .push(TransactionOutput::new(amount, payee));
 
             // change transaction output
-            if total_amount > amount {
-                transaction
-                    .transaction_outputs
-                    .push(TransactionOutput::new(total_amount - amount, keypair.public_key.clone()));
+            if total_amount > total_to_pay {
+                transaction.transaction_outputs.push(TransactionOutput::new(
+                    total_amount - total_to_pay,
+                    keypair.public_key.clone(),
+                ));
             }
         } else {
             transaction.transaction_inputs.push(TransactionInput {
