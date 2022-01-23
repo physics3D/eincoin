@@ -1,10 +1,11 @@
 # Eincoin
 
-my shitty try at implementing a cryptocurrency
+My try at implementing a cryptocurrency
 
 - P2P Network Topology: Tree (every node: 1 connection to server, multiple clients)
 - every node opens a server and a client
-- messages are bincode encoded message structs
+- messages are bincode encoded Message structs
+- addresses are the raw public keys
 - servers broadcast all messages
   - from server to connected clients
   - from clients to connected server
